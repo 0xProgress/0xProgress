@@ -14,9 +14,10 @@
 - Strengthening core Computer Science foundations.
 - Exploring scalable backend architectures.
 
-### 📊 Stats
-![Your GitHub Stats](https://github-readme-stats.vercel.app/api?username=0xProgress&show_icons=true&theme=dark)
-![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=0xProgress&layout=compact&theme=dark)
+### 📊 Activity & Status
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![AI Orchestration](https://img.shields.io/badge/AI-Orchestration-FF6F00?style=for-the-badge&logo=openai&logoColor=white)
+![CS Student](https://img.shields.io/badge/CS%20Student-LASUED-blue?style=for-the-badge)
 
 ---
 📫 **Reach me:** progressuwhuseba@gmail.com
