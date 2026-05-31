@@ -1,23 +1,31 @@
 # 0xProgress
 
-**Python Developer | AI Orchestration & Agentic Workflows**
+**Building in public — one bug at a time.**
+
+I'm on a path from open source contributor to paid developer. Currently diving deep into Python async systems, with Rust on the horizon.
+
+[![GitHub](https://img.shields.io/badge/GitHub-0xProgress-181717?style=flat&logo=github)](https://github.com/0xProgress)
 
 ---
 
-### 🛠️ Technical Stack
-- **Languages:** Python (Intermediate), SQL
-- **AI/ML:** LLM Orchestration, Prompt Engineering, API Integration
-- **Tools:** Git, Linux, Bash, VS Code
+### Recently Merged PRs
+<!-- PR-LIST:START -->
+<!-- PR-LIST:END -->
 
-### 🔭 Current Focus
-- Developing autonomous Python agents for workflow automation.
-- Strengthening core Computer Science foundations.
-- Exploring scalable backend architectures.
+### Stack
+`Python` `Async/Await` `aiohttp` `pytest` `Docker` `Linux`
 
-### 📊 Activity & Status
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![AI Orchestration](https://img.shields.io/badge/AI-Orchestration-FF6F00?style=for-the-badge&logo=openai&logoColor=white)
-![CS Student](https://img.shields.io/badge/CS%20Student-LASUED-blue?style=for-the-badge)
+### Learning
+`Rust` `Astro`
+
+### Philosophy
+- Fix the root cause, not the symptom
+- Every PR gets a test
+- Consistency > intensity
 
 ---
-📫 **Reach me:** progressuwhuseba@gmail.com
+
+### 💬 Let's Connect
+Whether you have a Python project with "good first issues," want to collaborate on async tools, or just want to talk shop:
+
+📫 **Email:** [progressuwhuseba@gmail.com](mailto:progressuwhuseba@gmail.com)
