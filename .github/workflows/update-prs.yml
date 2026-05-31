@@ -19,18 +19,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # PR counts
-          MERGED=$(gh search prs --author 0xProgress --state merged --limit 100 --json id | jq length)
+          # PR counts — use --merged and --state open
+          MERGED=$(gh search prs --author 0xProgress --merged --limit 100 --json id | jq length)
           OPEN=$(gh search prs --author 0xProgress --state open --limit 100 --json id | jq length)
           ISSUES=$(gh search issues --author 0xProgress --state closed --limit 100 --json id | jq length)
 
           # Recent 3 merged PRs
-          PRS=$(gh search prs --author 0xProgress --state merged --limit 3 --json title,url,repository --jq '.[] | "- **[\(.repository.nameWithOwner)]:** \(.title) ([PR](\(.url)))"')
+          PRS=$(gh search prs --author 0xProgress --merged --limit 3 --json title,url,repository --jq '.[] | "- **[\(.repository.nameWithOwner)]:** \(.title) ([PR](\(.url)))"')
           [ -z "$PRS" ] && PRS="*No merged PRs yet — working on it.*"
 
           STATS="| 🟢 Merged | 🟡 Open | 📝 Issues |\n|---|---|---|\n| $MERGED | $OPEN | $ISSUES |"
 
-          # Write to temp files
           echo "$STATS" > /tmp/stats.txt
           echo "$PRS" > /tmp/prs.txt
 
