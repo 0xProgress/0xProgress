@@ -10,10 +10,14 @@ I'm on a path from open source contributor to paid developer. Currently diving d
 
 ### 📊 Stats
 <!-- STATS:START -->
+| 🟢 Merged | 🟡 Open | 📝 Issues |
+|---|---|---|
+| 0 | 1 | 0 |
 <!-- STATS:END -->
 
 ### Recent Merged PRs
 <!-- PR-LIST:START -->
+*No merged PRs yet — working on it.*
 <!-- PR-LIST:END -->
 
 ### Stack
