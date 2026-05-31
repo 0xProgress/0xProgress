@@ -1,0 +1,63 @@
+name: Update README Stats
+
+on:
+  schedule:
+    - cron: '0 6,18 * * *'  # 6am and 6pm UTC
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch GitHub stats
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # PR stats
+          MERGED=$(gh search prs --author 0xProgress --state merged --limit 100 --json id | jq length)
+          OPEN=$(gh search prs --author 0xProgress --state open --limit 100 --json id | jq length)
+          TOTAL=$((MERGED + OPEN))
+
+          # Issue stats
+          ISSUES=$(gh search issues --author 0xProgress --state closed --limit 100 --json id | jq length)
+
+          # Recent 3 merged PRs
+          PRS=$(gh search prs --author 0xProgress --state merged --limit 3 --json title,url,repository --jq '.[] | "- **[\(.repository.nameWithOwner)]:** \(.title) ([PR](\(.url)))"')
+          [ -z "$PRS" ] && PRS="*No merged PRs yet — working on it.*"
+
+          echo "$PRS" > /tmp/pr-list.txt
+          echo "$MERGED" > /tmp/merged-count.txt
+          echo "$OPEN" > /tmp/open-count.txt
+          echo "$TOTAL" > /tmp/total-count.txt
+          echo "$ISSUES" > /tmp/issues-count.txt
+
+      - name: Update README
+        run: |
+          PR_LIST=$(cat /tmp/pr-list.txt)
+          MERGED=$(cat /tmp/merged-count.txt)
+          OPEN=$(cat /tmp/open-count.txt)
+          TOTAL=$(cat /tmp/total-count.txt)
+          ISSUES=$(cat /tmp/issues-count.txt)
+
+          STATS="| 🟢 Merged | 🟡 Open | 📝 Issues |\n|---|---|---|\n| $MERGED | $OPEN | $ISSUES |"
+
+          awk -v prs="$PR_LIST" -v stats="$STATS" '
+            /<!-- STATS:START -->/ { print; print stats; in_stats=1; next }
+            /<!-- STATS:END -->/ { in_stats=0 }
+            !in_stats { print }
+            /<!-- PR-LIST:START -->/ { print; print prs; in_pr=1; next }
+            /<!-- PR-LIST:END -->/ { in_pr=0 }
+            !in_pr { print }
+          ' README.md > README.tmp && mv README.tmp README.md
+
+      - name: Commit if changed
+        run: |
+          git config user.name "0xProgress"
+          git config user.email "progressuwhuseba@gmail.com"
+          git add README.md
+          git diff --staged --quiet || git commit -m "Update stats and PRs"
+          git push
