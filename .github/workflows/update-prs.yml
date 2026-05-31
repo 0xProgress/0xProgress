@@ -2,57 +2,67 @@ name: Update README Stats
 
 on:
   schedule:
-    - cron: '0 6,18 * * *'  # 6am and 6pm UTC
+    - cron: '0 6,18 * * *'
   workflow_dispatch:
 
 jobs:
   update:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch GitHub stats
+      - name: Fetch stats
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # PR stats
+          # PR counts
           MERGED=$(gh search prs --author 0xProgress --state merged --limit 100 --json id | jq length)
           OPEN=$(gh search prs --author 0xProgress --state open --limit 100 --json id | jq length)
-          TOTAL=$((MERGED + OPEN))
-
-          # Issue stats
           ISSUES=$(gh search issues --author 0xProgress --state closed --limit 100 --json id | jq length)
 
           # Recent 3 merged PRs
           PRS=$(gh search prs --author 0xProgress --state merged --limit 3 --json title,url,repository --jq '.[] | "- **[\(.repository.nameWithOwner)]:** \(.title) ([PR](\(.url)))"')
           [ -z "$PRS" ] && PRS="*No merged PRs yet — working on it.*"
 
-          echo "$PRS" > /tmp/pr-list.txt
-          echo "$MERGED" > /tmp/merged-count.txt
-          echo "$OPEN" > /tmp/open-count.txt
-          echo "$TOTAL" > /tmp/total-count.txt
-          echo "$ISSUES" > /tmp/issues-count.txt
+          STATS="| 🟢 Merged | 🟡 Open | 📝 Issues |\n|---|---|---|\n| $MERGED | $OPEN | $ISSUES |"
+
+          # Write to temp files
+          echo "$STATS" > /tmp/stats.txt
+          echo "$PRS" > /tmp/prs.txt
 
       - name: Update README
         run: |
-          PR_LIST=$(cat /tmp/pr-list.txt)
-          MERGED=$(cat /tmp/merged-count.txt)
-          OPEN=$(cat /tmp/open-count.txt)
-          TOTAL=$(cat /tmp/total-count.txt)
-          ISSUES=$(cat /tmp/issues-count.txt)
+          STATS=$(cat /tmp/stats.txt)
+          PRS=$(cat /tmp/prs.txt)
 
-          STATS="| 🟢 Merged | 🟡 Open | 📝 Issues |\n|---|---|---|\n| $MERGED | $OPEN | $ISSUES |"
+          # Use Python for reliable replacement
+          python3 << PYEOF
+          import re
 
-          awk -v prs="$PR_LIST" -v stats="$STATS" '
-            /<!-- STATS:START -->/ { print; print stats; in_stats=1; next }
-            /<!-- STATS:END -->/ { in_stats=0 }
-            !in_stats { print }
-            /<!-- PR-LIST:START -->/ { print; print prs; in_pr=1; next }
-            /<!-- PR-LIST:END -->/ { in_pr=0 }
-            !in_pr { print }
-          ' README.md > README.tmp && mv README.tmp README.md
+          with open("README.md", "r") as f:
+              content = f.read()
+
+          content = re.sub(
+              r"<!-- STATS:START -->.*?<!-- STATS:END -->",
+              f"<!-- STATS:START -->\n$STATS\n<!-- STATS:END -->",
+              content,
+              flags=re.DOTALL
+          )
+
+          content = re.sub(
+              r"<!-- PR-LIST:START -->.*?<!-- PR-LIST:END -->",
+              f"<!-- PR-LIST:START -->\n$PRS\n<!-- PR-LIST:END -->",
+              content,
+              flags=re.DOTALL
+          )
+
+          with open("README.md", "w") as f:
+              f.write(content)
+          PYEOF
 
       - name: Commit if changed
         run: |
