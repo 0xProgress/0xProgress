@@ -8,7 +8,11 @@ I'm on a path from open source contributor to paid developer. Currently diving d
 
 ---
 
-### Recently Merged PRs
+### 📊 Stats
+<!-- STATS:START -->
+<!-- STATS:END -->
+
+### Recent Merged PRs
 <!-- PR-LIST:START -->
 <!-- PR-LIST:END -->
 
