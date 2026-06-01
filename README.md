@@ -12,7 +12,7 @@ I'm on a path from open source contributor to paid developer. Currently diving d
 <!-- STATS:START -->
 | 🟢 Merged | 🟡 Open | 📝 Issues |
 |---|---|---|
-| 0 | 1 | 0 |
+| 0 | 0 | 0 |
 <!-- STATS:END -->
 
 ### Recent Merged PRs
