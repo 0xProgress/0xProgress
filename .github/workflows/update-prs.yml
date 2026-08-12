@@ -25,7 +25,7 @@ jobs:
           ISSUES=$(gh search issues --author 0xProgress --state closed --limit 100 --json id | jq length)
 
           # Latest commits from all repos (last 3)
-          COMMITS=$(gh search commits --author 0xProgress --limit 3 --json repository,commit,url --jq '.[] | "📝 [\(.repository.name)] \(.commit.message | split("\n")[0])"')
+          COMMITS=$(gh search commits --author 0xProgress --limit 3 --json repository,commit,url --jq '.[] | "- **\(.repository.name)** — \(.commit.message | split("\n")[0])"')
           [ -z "$COMMITS" ] && COMMITS="*No recent commits — building something soon.*"
 
           # Recent 3 merged PRs
