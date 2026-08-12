@@ -17,7 +17,9 @@ Python -> Go. Privacy-first AI tools.
 ## 📦 Latest Activity
 
 <!-- LATEST_COMMITS:START -->
-<!-- Will be auto-filled by workflow -->
+📝 [envdiff] Update GitHub Actions workflow for tests
+📝 [envdiff] Update tests.yml
+📝 [envdiff] Remove Codecov upload from tests workflow
 <!-- LATEST_COMMITS:END -->
 
 ---
@@ -27,7 +29,7 @@ Python -> Go. Privacy-first AI tools.
 <!-- STATS:START -->
 | 🟢 Merged | 🟡 Open | 📝 Issues |
 |:---:|:---:|:---:|
-| 0 | 0 | 0 |
+| 3 | 1 | 0 |
 <!-- STATS:END -->
 
 ---
