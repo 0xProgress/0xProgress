@@ -19,42 +19,53 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # PR counts — use --merged and --state open
+          # PR counts
           MERGED=$(gh search prs --author 0xProgress --merged --limit 100 --json id | jq length)
           OPEN=$(gh search prs --author 0xProgress --state open --limit 100 --json id | jq length)
           ISSUES=$(gh search issues --author 0xProgress --state closed --limit 100 --json id | jq length)
 
+          # Latest commits from all repos (last 3)
+          COMMITS=$(gh search commits --author 0xProgress --limit 3 --json repository,message,url --jq '.[] | "📝 [\(.repository.name)] \(.message | split("\n")[0])"')
+          [ -z "$COMMITS" ] && COMMITS="*No recent commits — building something soon.*"
+
           # Recent 3 merged PRs
-          PRS=$(gh search prs --author 0xProgress --merged --limit 3 --json title,url,repository --jq '.[] | "- **[\(.repository.nameWithOwner)]:** \(.title) ([PR](\(.url)))"')
+          PRS=$(gh search prs --author 0xProgress --merged --limit 3 --json title,url,repository --jq '.[] | "- [\(.repository.name)]: \(.title) ([PR](\(.url)))"')
           [ -z "$PRS" ] && PRS="*No merged PRs yet — working on it.*"
 
-          STATS="| 🟢 Merged | 🟡 Open | 📝 Issues |\n|---|---|---|\n| $MERGED | $OPEN | $ISSUES |"
-
-          echo "$STATS" > /tmp/stats.txt
-          echo "$PRS" > /tmp/prs.txt
+          echo "MERGED=$MERGED" >> $GITHUB_ENV
+          echo "OPEN=$OPEN" >> $GITHUB_ENV
+          echo "ISSUES=$ISSUES" >> $GITHUB_ENV
+          echo "COMMITS<<EOF" >> $GITHUB_ENV
+          echo "$COMMITS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "PRS<<EOF" >> $GITHUB_ENV
+          echo "$PRS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Update README
         run: |
-          STATS=$(cat /tmp/stats.txt)
-          PRS=$(cat /tmp/prs.txt)
-
-          # Use Python for reliable replacement
           python3 << PYEOF
           import re
 
           with open("README.md", "r") as f:
               content = f.read()
 
+          # Update stats
+          stats = f"""| 🟢 Merged | 🟡 Open | 📝 Issues |
+          |:---:|:---:|:---:|
+          | {MERGED} | {OPEN} | {ISSUES} |"""
           content = re.sub(
               r"<!-- STATS:START -->.*?<!-- STATS:END -->",
-              f"<!-- STATS:START -->\n$STATS\n<!-- STATS:END -->",
+              f"<!-- STATS:START -->\n{stats}\n<!-- STATS:END -->",
               content,
               flags=re.DOTALL
           )
 
+          # Update commits
+          commits = f"{COMMITS}"
           content = re.sub(
-              r"<!-- PR-LIST:START -->.*?<!-- PR-LIST:END -->",
-              f"<!-- PR-LIST:START -->\n$PRS\n<!-- PR-LIST:END -->",
+              r"<!-- LATEST_COMMITS:START -->.*?<!-- LATEST_COMMITS:END -->",
+              f"<!-- LATEST_COMMITS:START -->\n{commits}\n<!-- LATEST_COMMITS:END -->",
               content,
               flags=re.DOTALL
           )
@@ -62,11 +73,16 @@ jobs:
           with open("README.md", "w") as f:
               f.write(content)
           PYEOF
+        env:
+          MERGED: ${{ env.MERGED }}
+          OPEN: ${{ env.OPEN }}
+          ISSUES: ${{ env.ISSUES }}
+          COMMITS: ${{ env.COMMITS }}
 
       - name: Commit if changed
         run: |
           git config user.name "0xProgress"
           git config user.email "progressuwhuseba@gmail.com"
           git add README.md
-          git diff --staged --quiet || git commit -m "Update stats and PRs"
+          git diff --staged --quiet || git commit -m "📊 Update stats and commits [skip ci]"
           git push
