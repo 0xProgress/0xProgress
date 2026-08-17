@@ -17,9 +17,9 @@ Python -> Go. Privacy-first AI tools.
 ## 📦 Latest Activity
 
 <!-- LATEST_COMMITS:START -->
-- **envdiff** — Update GitHub Actions workflow for tests
-- **envdiff** — Update tests.yml
-- **envdiff** — Remove Codecov upload from tests workflow
+- **0xProgress** — Fixed workflow file to use github API -  I noticed github take time before they update gh search which have to index all repos
+- **glowing-fiesta** — OMG after how many hours :d
+- **0xmobilehub** — Initial commit
 <!-- LATEST_COMMITS:END -->
 
 ---
