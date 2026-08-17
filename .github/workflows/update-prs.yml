@@ -2,7 +2,7 @@ name: Update README Stats
 
 on:
   schedule:
-    - cron: '0 6,18 * * *'
+    - cron: "0 6,18 * * *"
   workflow_dispatch:
 
 jobs:
@@ -19,17 +19,43 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # PR counts
-          MERGED=$(gh search prs --author 0xProgress --merged --limit 100 --json id | jq length)
-          OPEN=$(gh search prs --author 0xProgress --state open --limit 100 --json id | jq length)
-          ISSUES=$(gh search issues --author 0xProgress --state closed --limit 100 --json id | jq length)
+          set -euo pipefail
 
-          # Latest commits from all repos (last 3)
-          COMMITS=$(gh search commits --author 0xProgress --limit 3 --json repository,commit,url --jq '.[] | "- **\(.repository.name)** — \(.commit.message | split("\n")[0])"')
-          [ -z "$COMMITS" ] && COMMITS="*No recent commits — building something soon.*"
+          # PR counts
+          MERGED=$(gh search prs --author="0xProgress" --merged --limit 100 --json id --jq 'length')
+          OPEN=$(gh search prs --author="0xProgress" --state open --limit 100 --json id --jq 'length')
+          ISSUES=$(gh search issues --author="0xProgress" --state closed --limit 100 --json id --jq 'length')
+
+          # Get all repositories
+          REPOS=$(gh api users/0xProgress/repos --paginate --jq '.[].name')
+
+          # Get latest commit from each repository using API directly
+          COMMITS=""
+          for repo in $REPOS; do
+            COMMIT_DATA=$(gh api "repos/0xProgress/$repo/commits?per_page=1" 2>/dev/null || true)
+
+            if [ -n "$COMMIT_DATA" ] && [ "$COMMIT_DATA" != "null" ] && [ "$(echo "$COMMIT_DATA" | jq 'length')" -gt 0 ]; then
+              COMMIT_DATE=$(echo "$COMMIT_DATA" | jq -r '.[0].commit.committer.date // "1970-01-01T00:00:00Z"')
+              COMMIT_MSG=$(echo "$COMMIT_DATA" | jq -r '.[0].commit.message' | head -1)
+              REPO_NAME=$(echo "$COMMIT_DATA" | jq -r '.[0].repository.name // empty')
+              [ -z "$REPO_NAME" ] && REPO_NAME="$repo"
+
+              COMMITS="${COMMITS}${COMMIT_DATE}|${REPO_NAME}|${COMMIT_MSG}\n"
+            fi
+          done
+
+          # Sort by date and get top 3
+          if [ -n "$COMMITS" ]; then
+            COMMITS=$(printf '%b' "$COMMITS" | sort -r | head -3 | while IFS='|' read -r date repo msg; do
+              [ -n "${date:-}" ] || continue
+              echo "- **$repo** — $msg"
+            done)
+          else
+            COMMITS="*No recent commits found.*"
+          fi
 
           # Recent 3 merged PRs
-          PRS=$(gh search prs --author 0xProgress --merged --limit 3 --json title,url,repository --jq '.[] | "- [\(.repository.name)]: \(.title) ([PR](\(.url)))"')
+          PRS=$(gh search prs --author="0xProgress" --merged --limit 3 --json title,url,repository --jq '.[] | "- [\(.repository.name)]: \(.title) ([PR](\(.url)))"')
           [ -z "$PRS" ] && PRS="*No merged PRs yet — working on it.*"
 
           echo "MERGED=$MERGED" >> $GITHUB_ENV
@@ -54,7 +80,8 @@ jobs:
           MERGED = os.environ.get("MERGED", "0")
           OPEN = os.environ.get("OPEN", "0")
           ISSUES = os.environ.get("ISSUES", "0")
-          COMMITS = os.environ.get("COMMITS", "*No recent commits — building something soon.*")
+          COMMITS = os.environ.get("COMMITS", "*No recent commits found.*")
+          PRS = os.environ.get("PRS", "*No merged PRs yet — working on it.*")
 
           # Update stats
           stats = f"""| 🟢 Merged | 🟡 Open | 📝 Issues |
@@ -68,10 +95,17 @@ jobs:
           )
 
           # Update commits
-          commits = f"{COMMITS}"
           content = re.sub(
               r"<!-- LATEST_COMMITS:START -->.*?<!-- LATEST_COMMITS:END -->",
-              f"<!-- LATEST_COMMITS:START -->\n{commits}\n<!-- LATEST_COMMITS:END -->",
+              f"<!-- LATEST_COMMITS:START -->\n{COMMITS}\n<!-- LATEST_COMMITS:END -->",
+              content,
+              flags=re.DOTALL
+          )
+
+          # Update PRs
+          content = re.sub(
+              r"<!-- LATEST_PRS:START -->.*?<!-- LATEST_PRS:END -->",
+              f"<!-- LATEST_PRS:START -->\n{PRS}\n<!-- LATEST_PRS:END -->",
               content,
               flags=re.DOTALL
           )
@@ -84,11 +118,14 @@ jobs:
           OPEN: ${{ env.OPEN }}
           ISSUES: ${{ env.ISSUES }}
           COMMITS: ${{ env.COMMITS }}
+          PRS: ${{ env.PRS }}
 
       - name: Commit if changed
         run: |
           git config user.name "0xProgress"
           git config user.email "progressuwhuseba@gmail.com"
           git add README.md
-          git diff --staged --quiet || git commit -m "📊 Update stats and commits [skip ci]"
-          git push
+          if ! git diff --staged --quiet; then
+            git commit -m "📊 Update stats and commits [skip ci]"
+            git push
+          fi
