@@ -17,7 +17,7 @@ Python -> Go. Privacy-first AI tools.
 ## 📦 Latest Activity
 
 <!-- LATEST_COMMITS:START -->
-- **0xProgress.github.io** — 📊 Update site data [skip ci]
+- **0xProgress.github.io** — Automatic update for site data [skip ci]
 - **0xProgress** — 📊 Update stats and commits [skip ci]
 - **glowing-fiesta** — OMG after how many hours :d
 <!-- LATEST_COMMITS:END -->
