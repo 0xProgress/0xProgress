@@ -17,9 +17,9 @@ Python -> Go. Privacy-first AI tools.
 ## 📦 Latest Activity
 
 <!-- LATEST_COMMITS:START -->
-- **0xProgress** — Fixed workflow file to use github API -  I noticed github take time before they update gh search which have to index all repos
+- **0xProgress.github.io** — 📊 Update site data [skip ci]
+- **0xProgress** — 📊 Update stats and commits [skip ci]
 - **glowing-fiesta** — OMG after how many hours :d
-- **0xmobilehub** — Initial commit
 <!-- LATEST_COMMITS:END -->
 
 ---
