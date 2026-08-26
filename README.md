@@ -18,8 +18,8 @@ Python -> Go. Privacy-first AI tools.
 
 <!-- LATEST_COMMITS:START -->
 - **0xProgress.github.io** — Automatic update for site data [skip ci]
+- **core** — Fix Teslemetry tariff calendar crash on hour-24 period boundaries (#180212)
 - **0xProgress** — 📊 Update stats and commits [skip ci]
-- **0xmobilehub** — fix - attempt 1 to wire implementation for complete feature set with real-time device sync, notifications, clipboard, SMS, calls, file transfer, and settings UI
 <!-- LATEST_COMMITS:END -->
 
 ---
