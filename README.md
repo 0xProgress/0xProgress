@@ -17,9 +17,9 @@ Python -> Go. Privacy-first AI tools.
 ## 📦 Latest Activity
 
 <!-- LATEST_COMMITS:START -->
-- **0xProgress.github.io** — Automatic update for site data [skip ci]
-- **didactic-bassoon** — Add files via upload
+- **ideal-potato** — Update CNAME
 - **0xProgress** — 📊 Update stats and commits [skip ci]
+- **0xProgress.github.io** — Automatic update for site data [skip ci]
 <!-- LATEST_COMMITS:END -->
 
 ---
