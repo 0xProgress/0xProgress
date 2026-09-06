@@ -17,9 +17,9 @@ Python -> Go. Privacy-first AI tools.
 ## 📦 Latest Activity
 
 <!-- LATEST_COMMITS:START -->
+- **0xProgress.github.io** — Automatic update for site data [skip ci]
 - **0xProgress** — 📊 Update stats and commits [skip ci]
 - **simlife** — 450+ errors, I'll ix them all
-- **0xProgress.github.io** — Automatic update for site data [skip ci]
 <!-- LATEST_COMMITS:END -->
 
 ---
