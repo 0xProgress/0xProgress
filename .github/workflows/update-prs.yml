@@ -17,7 +17,7 @@ jobs:
 
       - name: Fetch stats
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}  # ← CHANGE 1
         run: |
           set -euo pipefail
 
@@ -26,10 +26,10 @@ jobs:
           OPEN=$(gh search prs --author="0xProgress" --state open --limit 100 --json id --jq 'length')
           ISSUES=$(gh search issues --author="0xProgress" --state closed --limit 100 --json id --jq 'length')
 
-          # Get all repositories (including private)
-          REPOS=$(gh repo list 0xProgress --limit 1000 --json name --jq '.[].name')
+          # Get all repositories
+          REPOS=$(gh repo list 0xProgress --limit 1000 --json name --jq '.[].name')  # ← CHANGE 2
 
-          # Get latest commit from each repository - skip [skip ci]
+          # Get latest commit from each repository using API directly
           COMMITS=""
           for repo in $REPOS; do
             COMMIT_DATA=$(gh api "repos/0xProgress/$repo/commits?per_page=5" 2>/dev/null || true)
@@ -41,9 +41,10 @@ jobs:
               if [ "$REAL_COMMIT" != "null" ] && [ -n "$REAL_COMMIT" ]; then
                 COMMIT_DATE=$(echo "$REAL_COMMIT" | jq -r '.commit.committer.date // "1970-01-01T00:00:00Z"')
                 COMMIT_MSG=$(echo "$REAL_COMMIT" | jq -r '.commit.message' | head -1)
+                REPO_NAME=$(echo "$REAL_COMMIT" | jq -r '.repository.name // empty')
+                [ -z "$REPO_NAME" ] && REPO_NAME="$repo"
                 
-                # Use the repo name from our loop directly
-                COMMITS="${COMMITS}${COMMIT_DATE}|${repo}|${COMMIT_MSG}\n"
+                COMMITS="${COMMITS}${COMMIT_DATE}|${REPO_NAME}|${COMMIT_MSG}\n"
               fi
             fi
           done
@@ -58,8 +59,8 @@ jobs:
             COMMITS="*No recent commits found.*"
           fi
 
-          # Recent 5 merged PRs
-          PRS=$(gh search prs --author="0xProgress" --merged --limit 5 --json title,url,repository --jq '.[] | "- [\(.repository.name)]: \(.title) ([PR](\(.url)))"')
+          # Recent 3 merged PRs
+          PRS=$(gh search prs --author="0xProgress" --merged --limit 3 --json title,url,repository --jq '.[] | "- [\(.repository.name)]: \(.title) ([PR](\(.url)))"')
           [ -z "$PRS" ] && PRS="*No merged PRs yet — working on it.*"
 
           echo "MERGED=$MERGED" >> $GITHUB_ENV
