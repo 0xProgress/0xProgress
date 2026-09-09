@@ -17,7 +17,7 @@ jobs:
 
       - name: Fetch stats
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}  # ← CHANGE 1: Use PAT token
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           set -euo pipefail
 
@@ -26,8 +26,8 @@ jobs:
           OPEN=$(gh search prs --author="0xProgress" --state open --limit 100 --json id --jq 'length')
           ISSUES=$(gh search issues --author="0xProgress" --state closed --limit 100 --json id --jq 'length')
 
-          # Get all repositories (including private)  # ← CHANGE 2: Updated comment
-          REPOS=$(gh repo list 0xProgress --limit 1000 --json name --jq '.[].name')  # ← CHANGE 2: New command
+          # Get all repositories (including private)
+          REPOS=$(gh repo list 0xProgress --limit 1000 --json name --jq '.[].name')
 
           # Get latest commit from each repository - skip [skip ci]
           COMMITS=""
@@ -41,10 +41,9 @@ jobs:
               if [ "$REAL_COMMIT" != "null" ] && [ -n "$REAL_COMMIT" ]; then
                 COMMIT_DATE=$(echo "$REAL_COMMIT" | jq -r '.commit.committer.date // "1970-01-01T00:00:00Z"')
                 COMMIT_MSG=$(echo "$REAL_COMMIT" | jq -r '.commit.message' | head -1)
-                REPO_NAME=$(echo "$REAL_COMMIT" | jq -r '.repository.name // empty')
-                [ -z "$REPO_NAME" ] && REPO_NAME="$repo"
                 
-                COMMITS="${COMMITS}${COMMIT_DATE}|${REPO_NAME}|${COMMIT_MSG}\n"
+                # Use the repo name from our loop directly
+                COMMITS="${COMMITS}${COMMIT_DATE}|${repo}|${COMMIT_MSG}\n"
               fi
             fi
           done
