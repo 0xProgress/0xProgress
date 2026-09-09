@@ -1,23 +1,6 @@
-name: Update README Stats
-
-on:
-  schedule:
-    - cron: "0 6,18 * * *"
-  workflow_dispatch:
-
-jobs:
-  update:
-    runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Fetch stats
+- name: Fetch stats
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}  # ← CHANGE 1
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           set -euo pipefail
 
@@ -27,31 +10,29 @@ jobs:
           ISSUES=$(gh search issues --author="0xProgress" --state closed --limit 100 --json id --jq 'length')
 
           # Get all repositories
-          REPOS=$(gh repo list 0xProgress --limit 1000 --json name --jq '.[].name')  # ← CHANGE 2
+          REPOS=$(gh repo list 0xProgress --limit 1000 --json name --jq '.[].name')
 
           # Get latest commit from each repository using API directly
           COMMITS=""
           for repo in $REPOS; do
             COMMIT_DATA=$(gh api "repos/0xProgress/$repo/commits?per_page=5" 2>/dev/null || true)
             
-            if [ -n "$COMMIT_DATA" ] && [ "$COMMIT_DATA" != "null" ] && [ "$(echo "$COMMIT_DATA" | jq 'length')" -gt 0 ]; then
-              # Get the first commit that doesn't have [skip ci]
-              REAL_COMMIT=$(echo "$COMMIT_DATA" | jq '[.[] | select(.commit.message | contains("[skip ci]") | not)] | .[0]')
+            # Safely extract the first non-skip-ci commit ONLY if the response is a valid JSON array
+            REAL_COMMIT=$(echo "$COMMIT_DATA" | jq 'if type == "array" then [.[] | select(.commit.message | contains("[skip ci]") | not)] | .[0] else null end' 2>/dev/null || echo "null")
+            
+            if [ "$REAL_COMMIT" != "null" ] && [ -n "$REAL_COMMIT" ]; then
+              COMMIT_DATE=$(echo "$REAL_COMMIT" | jq -r '.commit.committer.date // "1970-01-01T00:00:00Z"')
+              COMMIT_MSG=$(echo "$REAL_COMMIT" | jq -r '.commit.message' | head -1)
+              REPO_NAME=$(echo "$REAL_COMMIT" | jq -r '.repository.name // empty')
+              [ -z "$REPO_NAME" ] && REPO_NAME="$repo"
               
-              if [ "$REAL_COMMIT" != "null" ] && [ -n "$REAL_COMMIT" ]; then
-                COMMIT_DATE=$(echo "$REAL_COMMIT" | jq -r '.commit.committer.date // "1970-01-01T00:00:00Z"')
-                COMMIT_MSG=$(echo "$REAL_COMMIT" | jq -r '.commit.message' | head -1)
-                REPO_NAME=$(echo "$REAL_COMMIT" | jq -r '.repository.name // empty')
-                [ -z "$REPO_NAME" ] && REPO_NAME="$repo"
-                
-                COMMITS="${COMMITS}${COMMIT_DATE}|${REPO_NAME}|${COMMIT_MSG}\n"
-              fi
+              COMMITS="${COMMITS}${COMMIT_DATE}|${REPO_NAME}|${COMMIT_MSG}\n"
             fi
           done
 
-          # Sort by date and get top 5
+          # Sort by date and get top 3
           if [ -n "$COMMITS" ]; then
-            COMMITS=$(printf '%b' "$COMMITS" | sort -r | head -5 | while IFS='|' read -r date repo msg; do
+            COMMITS=$(printf '%b' "$COMMITS" | sort -r | head -3 | while IFS='|' read -r date repo msg; do
               [ -n "${date:-}" ] || continue
               echo "- **$repo** — $msg"
             done)
@@ -72,65 +53,3 @@ jobs:
           echo "PRS<<EOF" >> $GITHUB_ENV
           echo "$PRS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-
-      - name: Update README
-        run: |
-          python3 << PYEOF
-          import os
-          import re
-
-          with open("README.md", "r") as f:
-              content = f.read()
-
-          MERGED = os.environ.get("MERGED", "0")
-          OPEN = os.environ.get("OPEN", "0")
-          ISSUES = os.environ.get("ISSUES", "0")
-          COMMITS = os.environ.get("COMMITS", "*No recent commits found.*")
-          PRS = os.environ.get("PRS", "*No merged PRs yet — working on it.*")
-
-          # Update stats
-          stats = f"""| 🟢 Merged | 🟡 Open | 📝 Issues |
-          |:---:|:---:|:---:|
-          | {MERGED} | {OPEN} | {ISSUES} |"""
-          content = re.sub(
-              r"<!-- STATS:START -->.*?<!-- STATS:END -->",
-              f"<!-- STATS:START -->\n{stats}\n<!-- STATS:END -->",
-              content,
-              flags=re.DOTALL
-          )
-
-          # Update commits
-          content = re.sub(
-              r"<!-- LATEST_COMMITS:START -->.*?<!-- LATEST_COMMITS:END -->",
-              f"<!-- LATEST_COMMITS:START -->\n{COMMITS}\n<!-- LATEST_COMMITS:END -->",
-              content,
-              flags=re.DOTALL
-          )
-
-          # Update PRs
-          content = re.sub(
-              r"<!-- LATEST_PRS:START -->.*?<!-- LATEST_PRS:END -->",
-              f"<!-- LATEST_PRS:START -->\n{PRS}\n<!-- LATEST_PRS:END -->",
-              content,
-              flags=re.DOTALL
-          )
-
-          with open("README.md", "w") as f:
-              f.write(content)
-          PYEOF
-        env:
-          MERGED: ${{ env.MERGED }}
-          OPEN: ${{ env.OPEN }}
-          ISSUES: ${{ env.ISSUES }}
-          COMMITS: ${{ env.COMMITS }}
-          PRS: ${{ env.PRS }}
-
-      - name: Commit if changed
-        run: |
-          git config user.name "0xProgress"
-          git config user.email "progressuwhuseba@gmail.com"
-          git add README.md
-          if ! git diff --staged --quiet; then
-            git commit -m "📊 Update stats and commits [skip ci]"
-            git push
-          fi
