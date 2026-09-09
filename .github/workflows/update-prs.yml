@@ -54,7 +54,7 @@ jobs:
           fi
 
           if [ -n "$COMMITS" ]; then
-            COMMITS=$(printf '%b' "$COMMITS" | sort -r | head -3 | while IFS='|' read -r date repo msg; do
+            COMMITS=$(printf '%b' "$COMMITS" | sort -r | head -5 | while IFS='|' read -r date repo msg; do
               [ -n "${date:-}" ] || continue
               echo "- **$repo** — $msg"
             done)
@@ -63,7 +63,7 @@ jobs:
           fi
 
           echo "🔗 Fetching recent PRs..."
-          PRS=$(gh search prs --author="0xProgress" --merged --limit 3 --json title,url,repository --jq '.[] | "- [\(.repository.name)]: \(.title) ([PR](\(.url)))"' 2>/dev/null || echo "")
+          PRS=$(gh search prs --author="0xProgress" --merged --limit 5 --json title,url,repository --jq '.[] | "- [\(.repository.name)]: \(.title) ([PR](\(.url)))"' 2>/dev/null || echo "")
           [ -z "$PRS" ] && PRS="*No merged PRs yet — working on it.*"
 
           echo "💾 Saving to GitHub Environment..."
