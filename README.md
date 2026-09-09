@@ -17,9 +17,9 @@ Python -> Go. Privacy-first AI tools.
 ## 📦 Latest Activity
 
 <!-- LATEST_COMMITS:START -->
-- **0xProgress** — 📊 Update stats and commits [skip ci]
-- **0xProgress.github.io** — Automatic update for site data [skip ci]
 - **simlife** — 450+ errors, I'll ix them all
+- **skills** — Merge pull request #1025 from mattpocock/chore/link-skills-exclude-misc
+- **ideal-potato** — Update CNAME
 <!-- LATEST_COMMITS:END -->
 
 ---
@@ -29,7 +29,7 @@ Python -> Go. Privacy-first AI tools.
 <!-- STATS:START -->
 | 🟢 Merged | 🟡 Open | 📝 Issues |
 |:---:|:---:|:---:|
-| 3 | 1 | 0 |
+| 4 | 1 | 0 |
 <!-- STATS:END -->
 
 ---
