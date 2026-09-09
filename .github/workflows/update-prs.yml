@@ -2,35 +2,42 @@
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          set -euo pipefail
+          # Removed '-e' to prevent abrupt exits on minor gh cli hiccups
+          set -uo pipefail 
 
-          # PR counts
-          MERGED=$(gh search prs --author="0xProgress" --merged --limit 100 --json id --jq 'length')
-          OPEN=$(gh search prs --author="0xProgress" --state open --limit 100 --json id --jq 'length')
-          ISSUES=$(gh search issues --author="0xProgress" --state closed --limit 100 --json id --jq 'length')
+          echo "🔍 Fetching PR and Issue counts..."
+          MERGED=$(gh search prs --author="0xProgress" --merged --limit 100 --json id --jq 'length' 2>/dev/null || echo "0")
+          OPEN=$(gh search prs --author="0xProgress" --state open --limit 100 --json id --jq 'length' 2>/dev/null || echo "0")
+          ISSUES=$(gh search issues --author="0xProgress" --state closed --limit 100 --json id --jq 'length' 2>/dev/null || echo "0")
 
-          # Get all repositories
-          REPOS=$(gh repo list 0xProgress --limit 1000 --json name --jq '.[].name')
+          echo "📦 Fetching repositories..."
+          REPOS=$(gh repo list 0xProgress --limit 1000 --json name --jq '.[].name' 2>/dev/null || echo "")
 
-          # Get latest commit from each repository using API directly
           COMMITS=""
-          for repo in $REPOS; do
-            COMMIT_DATA=$(gh api "repos/0xProgress/$repo/commits?per_page=5" 2>/dev/null || true)
-            
-            # Safely extract the first non-skip-ci commit ONLY if the response is a valid JSON array
-            REAL_COMMIT=$(echo "$COMMIT_DATA" | jq 'if type == "array" then [.[] | select(.commit.message | contains("[skip ci]") | not)] | .[0] else null end' 2>/dev/null || echo "null")
-            
-            if [ "$REAL_COMMIT" != "null" ] && [ -n "$REAL_COMMIT" ]; then
-              COMMIT_DATE=$(echo "$REAL_COMMIT" | jq -r '.commit.committer.date // "1970-01-01T00:00:00Z"')
-              COMMIT_MSG=$(echo "$REAL_COMMIT" | jq -r '.commit.message' | head -1)
-              REPO_NAME=$(echo "$REAL_COMMIT" | jq -r '.repository.name // empty')
-              [ -z "$REPO_NAME" ] && REPO_NAME="$repo"
+          if [ -n "$REPOS" ]; then
+            echo "🔄 Processing repositories..."
+            for repo in $REPOS; do
+              COMMIT_DATA=$(gh api "repos/0xProgress/$repo/commits?per_page=5" 2>/dev/null || echo "[]")
               
-              COMMITS="${COMMITS}${COMMIT_DATE}|${REPO_NAME}|${COMMIT_MSG}\n"
-            fi
-          done
+              # Safely extract the first non-skip-ci commit
+              REAL_COMMIT=$(echo "$COMMIT_DATA" | jq 'if type == "array" then [.[] | select(.commit.message | contains("[skip ci]") | not)] | .[0] else null end' 2>/dev/null || echo "null")
+              
+              if [ "$REAL_COMMIT" != "null" ] && [ -n "$REAL_COMMIT" ] && [ "$REAL_COMMIT" != "" ]; then
+                COMMIT_DATE=$(echo "$REAL_COMMIT" | jq -r '.commit.committer.date // "1970-01-01T00:00:00Z"' 2>/dev/null || echo "1970-01-01T00:00:00Z")
+                COMMIT_MSG=$(echo "$REAL_COMMIT" | jq -r '.commit.message' 2>/dev/null | head -1 || echo "No message")
+                REPO_NAME=$(echo "$REAL_COMMIT" | jq -r '.repository.name // empty' 2>/dev/null || echo "$repo")
+                [ -z "$REPO_NAME" ] && REPO_NAME="$repo"
+                
+                # Prevent pipe characters in commit messages from breaking our custom delimiter
+                COMMIT_MSG=$(echo "$COMMIT_MSG" | tr '|' ' ')
+                
+                COMMITS="${COMMITS}${COMMIT_DATE}|${REPO_NAME}|${COMMIT_MSG}\n"
+              fi
+            done
+          else
+            echo "⚠️ No repositories found or failed to fetch."
+          fi
 
-          # Sort by date and get top 3
           if [ -n "$COMMITS" ]; then
             COMMITS=$(printf '%b' "$COMMITS" | sort -r | head -3 | while IFS='|' read -r date repo msg; do
               [ -n "${date:-}" ] || continue
@@ -40,16 +47,21 @@
             COMMITS="*No recent commits found.*"
           fi
 
-          # Recent 3 merged PRs
-          PRS=$(gh search prs --author="0xProgress" --merged --limit 3 --json title,url,repository --jq '.[] | "- [\(.repository.name)]: \(.title) ([PR](\(.url)))"')
+          echo "🔗 Fetching recent PRs..."
+          PRS=$(gh search prs --author="0xProgress" --merged --limit 3 --json title,url,repository --jq '.[] | "- [\(.repository.name)]: \(.title) ([PR](\(.url)))"' 2>/dev/null || echo "")
           [ -z "$PRS" ] && PRS="*No merged PRs yet — working on it.*"
 
+          echo "💾 Saving to GitHub Environment..."
           echo "MERGED=$MERGED" >> $GITHUB_ENV
           echo "OPEN=$OPEN" >> $GITHUB_ENV
           echo "ISSUES=$ISSUES" >> $GITHUB_ENV
+          
           echo "COMMITS<<EOF" >> $GITHUB_ENV
           echo "$COMMITS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+          
           echo "PRS<<EOF" >> $GITHUB_ENV
           echo "$PRS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+          
+          echo "✅ Done!"
