@@ -1,8 +1,24 @@
-- name: Fetch stats
+name: Update README Stats
+
+on:
+  schedule:
+    - cron: "30 2 * * 2,4,6"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch stats
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          # Removed '-e' to prevent abrupt exits on minor gh cli hiccups
           set -uo pipefail 
 
           echo "🔍 Fetching PR and Issue counts..."
@@ -19,7 +35,6 @@
             for repo in $REPOS; do
               COMMIT_DATA=$(gh api "repos/0xProgress/$repo/commits?per_page=5" 2>/dev/null || echo "[]")
               
-              # Safely extract the first non-skip-ci commit
               REAL_COMMIT=$(echo "$COMMIT_DATA" | jq 'if type == "array" then [.[] | select(.commit.message | contains("[skip ci]") | not)] | .[0] else null end' 2>/dev/null || echo "null")
               
               if [ "$REAL_COMMIT" != "null" ] && [ -n "$REAL_COMMIT" ] && [ "$REAL_COMMIT" != "" ]; then
@@ -65,3 +80,62 @@
           echo "EOF" >> $GITHUB_ENV
           
           echo "✅ Done!"
+
+      - name: Update README
+        run: |
+          python3 << PYEOF
+          import os
+          import re
+
+          with open("README.md", "r") as f:
+              content = f.read()
+
+          MERGED = os.environ.get("MERGED", "0")
+          OPEN = os.environ.get("OPEN", "0")
+          ISSUES = os.environ.get("ISSUES", "0")
+          COMMITS = os.environ.get("COMMITS", "*No recent commits found.*")
+          PRS = os.environ.get("PRS", "*No merged PRs yet — working on it.*")
+
+          stats = f"""| 🟢 Merged | 🟡 Open | 📝 Issues |
+          |:---:|:---:|:---:|
+          | {MERGED} | {OPEN} | {ISSUES} |"""
+          content = re.sub(
+              r"<!-- STATS:START -->.*?<!-- STATS:END -->",
+              f"<!-- STATS:START -->\n{stats}\n<!-- STATS:END -->",
+              content,
+              flags=re.DOTALL
+          )
+
+          content = re.sub(
+              r"<!-- LATEST_COMMITS:START -->.*?<!-- LATEST_COMMITS:END -->",
+              f"<!-- LATEST_COMMITS:START -->\n{COMMITS}\n<!-- LATEST_COMMITS:END -->",
+              content,
+              flags=re.DOTALL
+          )
+
+          content = re.sub(
+              r"<!-- LATEST_PRS:START -->.*?<!-- LATEST_PRS:END -->",
+              f"<!-- LATEST_PRS:START -->\n{PRS}\n<!-- LATEST_PRS:END -->",
+              content,
+              flags=re.DOTALL
+          )
+
+          with open("README.md", "w") as f:
+              f.write(content)
+          PYEOF
+        env:
+          MERGED: ${{ env.MERGED }}
+          OPEN: ${{ env.OPEN }}
+          ISSUES: ${{ env.ISSUES }}
+          COMMITS: ${{ env.COMMITS }}
+          PRS: ${{ env.PRS }}
+
+      - name: Commit if changed
+        run: |
+          git config user.name "0xProgress"
+          git config user.email "progressuwhuseba@gmail.com"
+          git add README.md
+          if ! git diff --staged --quiet; then
+            git commit -m "📊 Update stats and commits [skip ci]"
+            git push
+          fi
