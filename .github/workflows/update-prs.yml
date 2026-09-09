@@ -32,15 +32,20 @@ jobs:
           # Get latest commit from each repository using API directly
           COMMITS=""
           for repo in $REPOS; do
-            COMMIT_DATA=$(gh api "repos/0xProgress/$repo/commits?per_page=1" 2>/dev/null || true)
-
+            COMMIT_DATA=$(gh api "repos/0xProgress/$repo/commits?per_page=5" 2>/dev/null || true)
+            
             if [ -n "$COMMIT_DATA" ] && [ "$COMMIT_DATA" != "null" ] && [ "$(echo "$COMMIT_DATA" | jq 'length')" -gt 0 ]; then
-              COMMIT_DATE=$(echo "$COMMIT_DATA" | jq -r '.[0].commit.committer.date // "1970-01-01T00:00:00Z"')
-              COMMIT_MSG=$(echo "$COMMIT_DATA" | jq -r '.[0].commit.message' | head -1)
-              REPO_NAME=$(echo "$COMMIT_DATA" | jq -r '.[0].repository.name // empty')
-              [ -z "$REPO_NAME" ] && REPO_NAME="$repo"
-
-              COMMITS="${COMMITS}${COMMIT_DATE}|${REPO_NAME}|${COMMIT_MSG}\n"
+              # Get the first commit that doesn't have [skip ci]
+              REAL_COMMIT=$(echo "$COMMIT_DATA" | jq '[.[] | select(.commit.message | contains("[skip ci]") | not)] | .[0]')
+              
+              if [ "$REAL_COMMIT" != "null" ] && [ -n "$REAL_COMMIT" ]; then
+                COMMIT_DATE=$(echo "$REAL_COMMIT" | jq -r '.commit.committer.date // "1970-01-01T00:00:00Z"')
+                COMMIT_MSG=$(echo "$REAL_COMMIT" | jq -r '.commit.message' | head -1)
+                REPO_NAME=$(echo "$REAL_COMMIT" | jq -r '.repository.name // empty')
+                [ -z "$REPO_NAME" ] && REPO_NAME="$repo"
+                
+                COMMITS="${COMMITS}${COMMIT_DATE}|${REPO_NAME}|${COMMIT_MSG}\n"
+              fi
             fi
           done
 
