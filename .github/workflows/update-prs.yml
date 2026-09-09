@@ -49,7 +49,7 @@ jobs:
             fi
           done
 
-          # Sort by date and get top 3
+          # Sort by date and get top 5
           if [ -n "$COMMITS" ]; then
             COMMITS=$(printf '%b' "$COMMITS" | sort -r | head -5 | while IFS='|' read -r date repo msg; do
               [ -n "${date:-}" ] || continue
@@ -59,8 +59,8 @@ jobs:
             COMMITS="*No recent commits found.*"
           fi
 
-          # Recent 3 merged PRs
-          PRS=$(gh search prs --author="0xProgress" --merged --limit 3 --json title,url,repository --jq '.[] | "- [\(.repository.name)]: \(.title) ([PR](\(.url)))"')
+          # Recent 5 merged PRs
+          PRS=$(gh search prs --author="0xProgress" --merged --limit 5 --json title,url,repository --jq '.[] | "- [\(.repository.name)]: \(.title) ([PR](\(.url)))"')
           [ -z "$PRS" ] && PRS="*No merged PRs yet — working on it.*"
 
           echo "MERGED=$MERGED" >> $GITHUB_ENV
