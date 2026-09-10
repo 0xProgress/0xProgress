@@ -17,11 +17,11 @@ Python -> Go. Privacy-first AI tools.
 ## 📦 Latest Activity
 
 <!-- LATEST_COMMITS:START -->
+- **0xProgress.github.io** — Fix repo extraction in site-data.json processing
 - **0xProgress** — Increase limits for recent commits and PRs fetched
 - **glowing-pancake** — feat: complete physics sandbox foundation (TS-001 through TS-006)
 - **redesigned-spork** — - Refactor code structure for improved readability and maintainability
 - **simlife** — 450+ errors, I'll ix them all
-- **skills** — Merge pull request #1025 from mattpocock/chore/link-skills-exclude-misc
 <!-- LATEST_COMMITS:END -->
 
 ---
@@ -31,7 +31,7 @@ Python -> Go. Privacy-first AI tools.
 <!-- STATS:START -->
 | 🟢 Merged | 🟡 Open | 📝 Issues |
 |:---:|:---:|:---:|
-| 5 | 1 | 0 |
+| 6 | 1 | 0 |
 <!-- STATS:END -->
 
 ---
