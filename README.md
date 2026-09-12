@@ -36,13 +36,4 @@ Python -> Go. Privacy-first AI tools.
 
 ---
 
-## 🎯 2026 Goals
-
-- [x] AI Medical Triage MVP + deploy
-- [x] Build a Go project -> [`retry`](https://github.com/0xProgress/retry)
-- [ ] 5 open source contributions
-- [ ] First paid OSS contribution
-
----
-
 *Building in public -- one bug at a time.* 🚀
