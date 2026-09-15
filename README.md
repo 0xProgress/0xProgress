@@ -36,4 +36,4 @@ Python -> Go. Privacy-first AI tools.
 
 ---
 
-*Building in public -- one bug at a time.* 🚀
+<p align="center"><em>Building in public -- one bug at a time.</em> 🚀</p>
