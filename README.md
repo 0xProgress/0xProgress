@@ -17,11 +17,11 @@ Python -> Go. Privacy-first AI tools.
 ## 📦 Latest Activity
 
 <!-- LATEST_COMMITS:START -->
-- **0xProgress** — Delete 2026 goals from README
+- **core** — Bump aioshelly to 13.33.0 (#182312)
+- **0xProgress** — centered a div
 - **0xProgress.github.io** — Fix repo extraction in site-data.json processing
 - **glowing-pancake** — feat: complete physics sandbox foundation (TS-001 through TS-006)
 - **govee-local-api** — Bump dev version to 3.1.1
-- **redesigned-spork** — - Refactor code structure for improved readability and maintainability
 <!-- LATEST_COMMITS:END -->
 
 ---
@@ -31,7 +31,7 @@ Python -> Go. Privacy-first AI tools.
 <!-- STATS:START -->
 | 🟢 Merged | 🟡 Open | 📝 Issues |
 |:---:|:---:|:---:|
-| 7 | 2 | 0 |
+| 8 | 1 | 0 |
 <!-- STATS:END -->
 
 ---
