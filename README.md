@@ -17,10 +17,10 @@ Python -> Go. Privacy-first AI tools.
 ## 📦 Latest Activity
 
 <!-- LATEST_COMMITS:START -->
+- **webhookd** — fix: audit codebase and improve reliability (#7)
 - **core** — Bump aioshelly to 13.33.0 (#182312)
 - **0xProgress** — centered a div
 - **0xProgress.github.io** — Fix repo extraction in site-data.json processing
-- **glowing-pancake** — feat: complete physics sandbox foundation (TS-001 through TS-006)
 - **govee-local-api** — Bump dev version to 3.1.1
 <!-- LATEST_COMMITS:END -->
 
@@ -31,7 +31,7 @@ Python -> Go. Privacy-first AI tools.
 <!-- STATS:START -->
 | 🟢 Merged | 🟡 Open | 📝 Issues |
 |:---:|:---:|:---:|
-| 8 | 1 | 0 |
+| 10 | 0 | 0 |
 <!-- STATS:END -->
 
 ---
