@@ -19,33 +19,36 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          set -uo pipefail 
+          set -uo pipefail
 
           echo "🔍 Fetching PR and Issue counts..."
           MERGED=$(gh search prs --author="0xProgress" --merged --limit 100 --json id --jq 'length' 2>/dev/null || echo "0")
           OPEN=$(gh search prs --author="0xProgress" --state open --limit 100 --json id --jq 'length' 2>/dev/null || echo "0")
           ISSUES=$(gh search issues --author="0xProgress" --state closed --limit 100 --json id --jq 'length' 2>/dev/null || echo "0")
 
-          echo "📦 Fetching repositories..."
-          REPOS=$(gh repo list 0xProgress --limit 1000 --json name --jq '.[].name' 2>/dev/null || echo "")
+          echo "⭐ Fetching stars and followers..."
+          STARS=$(gh repo list 0xProgress --source --limit 1000 --json stargazerCount --jq '[.[].stargazerCount] | add // 0' 2>/dev/null || echo "0")
+          FOLLOWERS=$(gh api user --jq '.followers' 2>/dev/null || echo "0")
+
+          echo "📦 Fetching repositories (non-fork only)..."
+          REPOS=$(gh repo list 0xProgress --source --limit 1000 --json name --jq '.[].name' 2>/dev/null || echo "")
 
           COMMITS=""
           if [ -n "$REPOS" ]; then
             echo "🔄 Processing repositories..."
             for repo in $REPOS; do
               COMMIT_DATA=$(gh api "repos/0xProgress/$repo/commits?per_page=5" 2>/dev/null || echo "[]")
-              
+
               REAL_COMMIT=$(echo "$COMMIT_DATA" | jq 'if type == "array" then [.[] | select(.commit.message | contains("[skip ci]") | not)] | .[0] else null end' 2>/dev/null || echo "null")
-              
+
               if [ "$REAL_COMMIT" != "null" ] && [ -n "$REAL_COMMIT" ] && [ "$REAL_COMMIT" != "" ]; then
                 COMMIT_DATE=$(echo "$REAL_COMMIT" | jq -r '.commit.committer.date // "1970-01-01T00:00:00Z"' 2>/dev/null || echo "1970-01-01T00:00:00Z")
                 COMMIT_MSG=$(echo "$REAL_COMMIT" | jq -r '.commit.message' 2>/dev/null | head -1 || echo "No message")
                 REPO_NAME=$(echo "$REAL_COMMIT" | jq -r '.repository.name // empty' 2>/dev/null || echo "$repo")
                 [ -z "$REPO_NAME" ] && REPO_NAME="$repo"
-                
-                # Prevent pipe characters in commit messages from breaking our custom delimiter
+
                 COMMIT_MSG=$(echo "$COMMIT_MSG" | tr '|' ' ')
-                
+
                 COMMITS="${COMMITS}${COMMIT_DATE}|${REPO_NAME}|${COMMIT_MSG}\n"
               fi
             done
@@ -56,7 +59,7 @@ jobs:
           if [ -n "$COMMITS" ]; then
             COMMITS=$(printf '%b' "$COMMITS" | sort -r | head -5 | while IFS='|' read -r date repo msg; do
               [ -n "${date:-}" ] || continue
-              echo "- **$repo** — $msg"
+              echo "- **$repo** - $msg"
             done)
           else
             COMMITS="*No recent commits found.*"
@@ -64,26 +67,28 @@ jobs:
 
           echo "🔗 Fetching recent PRs..."
           PRS=$(gh search prs --author="0xProgress" --merged --limit 5 --json title,url,repository --jq '.[] | "- [\(.repository.name)]: \(.title) ([PR](\(.url)))"' 2>/dev/null || echo "")
-          [ -z "$PRS" ] && PRS="*No merged PRs yet — working on it.*"
+          [ -z "$PRS" ] && PRS="*No merged PRs yet.*"
 
           echo "💾 Saving to GitHub Environment..."
           echo "MERGED=$MERGED" >> $GITHUB_ENV
           echo "OPEN=$OPEN" >> $GITHUB_ENV
           echo "ISSUES=$ISSUES" >> $GITHUB_ENV
-          
+          echo "STARS=$STARS" >> $GITHUB_ENV
+          echo "FOLLOWERS=$FOLLOWERS" >> $GITHUB_ENV
+
           echo "COMMITS<<EOF" >> $GITHUB_ENV
           echo "$COMMITS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-          
+
           echo "PRS<<EOF" >> $GITHUB_ENV
           echo "$PRS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-          
+
           echo "✅ Done!"
 
       - name: Update README
         run: |
-          python3 << PYEOF
+          python3 << 'PYEOF'
           import os
           import re
 
@@ -93,31 +98,31 @@ jobs:
           MERGED = os.environ.get("MERGED", "0")
           OPEN = os.environ.get("OPEN", "0")
           ISSUES = os.environ.get("ISSUES", "0")
+          STARS = os.environ.get("STARS", "0")
+          FOLLOWERS = os.environ.get("FOLLOWERS", "0")
           COMMITS = os.environ.get("COMMITS", "*No recent commits found.*")
-          PRS = os.environ.get("PRS", "*No merged PRs yet — working on it.*")
+          PRS = os.environ.get("PRS", "*No merged PRs yet.*")
 
-          stats = f"""| 🟢 Merged | 🟡 Open | 📝 Issues |
-          |:---:|:---:|:---:|
-          | {MERGED} | {OPEN} | {ISSUES} |"""
+          stats = f"`\u2b50 {STARS} stars` `\ud83d\udc65 {FOLLOWERS} followers` `\ud83d\udfe2 {MERGED} merged` `\ud83d\udfe1 {OPEN} open`"
           content = re.sub(
               r"<!-- STATS:START -->.*?<!-- STATS:END -->",
               f"<!-- STATS:START -->\n{stats}\n<!-- STATS:END -->",
               content,
-              flags=re.DOTALL
+              flags=re.DOTALL,
           )
 
           content = re.sub(
               r"<!-- LATEST_COMMITS:START -->.*?<!-- LATEST_COMMITS:END -->",
               f"<!-- LATEST_COMMITS:START -->\n{COMMITS}\n<!-- LATEST_COMMITS:END -->",
               content,
-              flags=re.DOTALL
+              flags=re.DOTALL,
           )
 
           content = re.sub(
               r"<!-- LATEST_PRS:START -->.*?<!-- LATEST_PRS:END -->",
               f"<!-- LATEST_PRS:START -->\n{PRS}\n<!-- LATEST_PRS:END -->",
               content,
-              flags=re.DOTALL
+              flags=re.DOTALL,
           )
 
           with open("README.md", "w") as f:
@@ -127,6 +132,8 @@ jobs:
           MERGED: ${{ env.MERGED }}
           OPEN: ${{ env.OPEN }}
           ISSUES: ${{ env.ISSUES }}
+          STARS: ${{ env.STARS }}
+          FOLLOWERS: ${{ env.FOLLOWERS }}
           COMMITS: ${{ env.COMMITS }}
           PRS: ${{ env.PRS }}
 

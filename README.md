@@ -1,39 +1,38 @@
-# Hi There;
+### `~ $ whoami`
 
-### I'm 0xProgress
-Python -> Go. Privacy-first AI tools.
+I'm **0xProgress**. Go · Python · privacy-first AI tools.
+
+```txt
+$ cat about.txt
+Building tools that work. Fast, reliable, low-resource.
+The kind of software you can actually depend on.
+```
+
+<!-- STATS:START -->
+
+`⭐ 0 stars` `👥 0 followers` `🟢 11 merged` `🟡 0 open`
+<!-- STATS:END -->
 
 [GitHub](https://github.com/0xProgress) · [Twitter](https://twitter.com/0xProgress_) · [LinkedIn](https://linkedin.com/in/0xProgress) · [Email](mailto:progressuwhuseba@gmail.com)
 
 ---
 
-## 🛠️ Tech Stack
+### `~ $ cat stack.txt`
 
-**Proficient:** Python · Go · Docker · Linux · Git  
-**Learning:** Advanced Go concurrency · System Design
+```txt
+proficient   Python · Go · Docker · Linux · Git
+learning     Go concurrency · system design
+```
 
 ---
 
-## 📦 Latest Activity
+### `~ $ git log --oneline -5`
 
 <!-- LATEST_COMMITS:START -->
-- **is-a-dev-register** — Merge pull request #53367 from deneyy/patch-1
-- **waitfor** — ci: pin actions to commit SHAs
-- **verbose-octo-fortnight** — Refactor CI workflow with separate jobs
-- **webhookd** — test: close HTTP response bodies in server tests to satisfy lint (#8)
-- **core** — Bump aioshelly to 13.33.0 (#182312)
+
+_No recent commits found._
 <!-- LATEST_COMMITS:END -->
 
 ---
 
-## 📈 Stats
-
-<!-- STATS:START -->
-| 🟢 Merged | 🟡 Open | 📝 Issues |
-|:---:|:---:|:---:|
-| 11 | 0 | 1 |
-<!-- STATS:END -->
-
----
-
-<p align="center"><em>Building in public -- one bug at a time.</em> 🚀</p>
+<p align="center"><sub>building in public, one bug at a time</sub></p>
