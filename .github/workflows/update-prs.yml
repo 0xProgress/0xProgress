@@ -30,8 +30,8 @@ jobs:
           STARS=$(gh repo list 0xProgress --source --limit 1000 --json stargazerCount --jq '[.[].stargazerCount] | add // 0' 2>/dev/null || echo "0")
           FOLLOWERS=$(gh api user --jq '.followers' 2>/dev/null || echo "0")
 
-          echo "📦 Fetching repositories (non-fork only)..."
-          REPOS=$(gh repo list 0xProgress --source --limit 1000 --json name --jq '.[].name' 2>/dev/null || echo "")
+          echo "📦 Fetching repositories (non-fork, filtered)..."
+          REPOS=$(gh repo list 0xProgress --source --limit 1000 --json name --jq '.[].name | select(. != "0xProgress.github.io" and . != "0xProgress" and . != "verbose-octo-fortnight")' 2>/dev/null || echo "")
 
           COMMITS=""
           if [ -n "$REPOS" ]; then
@@ -87,12 +87,24 @@ jobs:
           echo "✅ Done!"
 
       - name: Update README
+        env:
+          PYTHONIOENCODING: utf-8
+          MERGED: ${{ env.MERGED }}
+          OPEN: ${{ env.OPEN }}
+          ISSUES: ${{ env.ISSUES }}
+          STARS: ${{ env.STARS }}
+          FOLLOWERS: ${{ env.FOLLOWERS }}
+          COMMITS: ${{ env.COMMITS }}
+          PRS: ${{ env.PRS }}
         run: |
           python3 << 'PYEOF'
           import os
           import re
+          import sys
 
-          with open("README.md", "r") as f:
+          sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+          with open("README.md", "r", encoding="utf-8") as f:
               content = f.read()
 
           MERGED = os.environ.get("MERGED", "0")
@@ -103,45 +115,44 @@ jobs:
           COMMITS = os.environ.get("COMMITS", "*No recent commits found.*")
           PRS = os.environ.get("PRS", "*No merged PRs yet.*")
 
-          stats = f"`\u2b50 {STARS} stars` `\ud83d\udc65 {FOLLOWERS} followers` `\ud83d\udfe2 {MERGED} merged` `\ud83d\udfe1 {OPEN} open`"
+          stats = (
+              "![Stars](https://img.shields.io/badge/stars-" + STARS + "-b45309?style=flat-square&labelColor=1a1815) "
+              "![Followers](https://img.shields.io/badge/followers-" + FOLLOWERS + "-b45309?style=flat-square&labelColor=1a1815) "
+              "![Merged](https://img.shields.io/badge/merged-" + MERGED + "-15803d?style=flat-square&labelColor=1a1815) "
+              "![Open](https://img.shields.io/badge/open-" + OPEN + "-d97706?style=flat-square&labelColor=1a1815)"
+          )
+
           content = re.sub(
               r"<!-- STATS:START -->.*?<!-- STATS:END -->",
-              f"<!-- STATS:START -->\n{stats}\n<!-- STATS:END -->",
+              "<!-- STATS:START -->\n" + stats + "\n<!-- STATS:END -->",
               content,
               flags=re.DOTALL,
           )
 
           content = re.sub(
               r"<!-- LATEST_COMMITS:START -->.*?<!-- LATEST_COMMITS:END -->",
-              f"<!-- LATEST_COMMITS:START -->\n{COMMITS}\n<!-- LATEST_COMMITS:END -->",
+              "<!-- LATEST_COMMITS:START -->\n" + COMMITS + "\n<!-- LATEST_COMMITS:END -->",
               content,
               flags=re.DOTALL,
           )
 
           content = re.sub(
               r"<!-- LATEST_PRS:START -->.*?<!-- LATEST_PRS:END -->",
-              f"<!-- LATEST_PRS:START -->\n{PRS}\n<!-- LATEST_PRS:END -->",
+              "<!-- LATEST_PRS:START -->\n" + PRS + "\n<!-- LATEST_PRS:END -->",
               content,
               flags=re.DOTALL,
           )
 
-          with open("README.md", "w") as f:
+          with open("README.md", "w", encoding="utf-8") as f:
               f.write(content)
           PYEOF
-        env:
-          MERGED: ${{ env.MERGED }}
-          OPEN: ${{ env.OPEN }}
-          ISSUES: ${{ env.ISSUES }}
-          STARS: ${{ env.STARS }}
-          FOLLOWERS: ${{ env.FOLLOWERS }}
-          COMMITS: ${{ env.COMMITS }}
-          PRS: ${{ env.PRS }}
 
       - name: Commit if changed
         run: |
           git config user.name "0xProgress"
           git config user.email "progressuwhuseba@gmail.com"
           git add README.md
+
           if ! git diff --staged --quiet; then
             git commit -m "📊 Update stats and commits [skip ci]"
             git push
