@@ -9,7 +9,7 @@ The kind of software you can actually depend on.
 ```
 
 <!-- STATS:START -->
-![Stars](https://img.shields.io/badge/stars-1-b45309?style=flat-square&labelColor=1a1815) ![Followers](https://img.shields.io/badge/followers-2-b45309?style=flat-square&labelColor=1a1815) ![Merged](https://img.shields.io/badge/merged-11-15803d?style=flat-square&labelColor=1a1815) ![Open](https://img.shields.io/badge/open-1-d97706?style=flat-square&labelColor=1a1815)
+![Stars](https://img.shields.io/badge/stars-1-b45309?style=flat-square&labelColor=1a1815) ![Followers](https://img.shields.io/badge/followers-2-b45309?style=flat-square&labelColor=1a1815) ![Merged](https://img.shields.io/badge/merged-12-15803d?style=flat-square&labelColor=1a1815) ![Open](https://img.shields.io/badge/open-0-d97706?style=flat-square&labelColor=1a1815)
 <!-- STATS:END -->
 
 [GitHub](https://github.com/0xProgress) · [Twitter](https://twitter.com/0xProgress_) · [LinkedIn](https://linkedin.com/in/0xProgress) · [Email](mailto:progressuwhuseba@gmail.com)
