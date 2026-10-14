@@ -1,40 +1,19 @@
-### `~ $ whoami`
+# Hi, I'm 0xProgress (Bobby™) 👋
 
-I'm **0xProgress**. Go · Python · privacy-first AI tools.
+I'm a student studying computer science. I build small, practical tools to solve problems I notice, focusing on software that is fast, reliable, and low-resource.
 
-```txt
-$ cat about.txt
-Building tools that work. Fast, reliable, low-resource.
-The kind of software you can actually depend on.
-```
+- 🌐 Learn more about my work on my [portfolio](https://0xprogress.is-a.dev/)
+- 💻 Currently building with: **Go**, **Python**, **Linux**, and **Git**
+- 🌱 Currently learning: **Go concurrency** and **system design**
+- 📫 Reach me: [X](https://twitter.com/0xProgress_) · [Discord](https://discord.com/users/1214231706698252320) · [Email](mailto:progressuwhuseba@gmail.com)
 
-<!-- STATS:START -->
-![Stars](https://img.shields.io/badge/stars-1-b45309?style=flat-square&labelColor=1a1815) ![Followers](https://img.shields.io/badge/followers-2-b45309?style=flat-square&labelColor=1a1815) ![Merged](https://img.shields.io/badge/merged-12-15803d?style=flat-square&labelColor=1a1815) ![Open](https://img.shields.io/badge/open-0-d97706?style=flat-square&labelColor=1a1815)
-<!-- STATS:END -->
+### 🛠️ Highlighted Projects
 
-[GitHub](https://github.com/0xProgress) · [Twitter](https://twitter.com/0xProgress_) · [LinkedIn](https://linkedin.com/in/0xProgress) · [Email](mailto:progressuwhuseba@gmail.com)
+- **[waitfor](https://github.com/0xProgress/waitfor)**: Block until a condition is true, or tell you exactly why it wasn't.
+- **[retry](https://github.com0xProgress/retry)**: Retry any command with exponential backoff. One tool, one job.
+- **[is-a.dev](https://github.com/is-a-dev/register)**: Maintainer helping manage free subdomain registrations.
 
----
-
-### `~ $ cat stack.txt`
-
-```txt
-proficient   Python · Go · Docker · Linux · Git
-learning     Go concurrency · system design
-```
+*See [all my repositories](https://github.com/0xProgress?tab=repositories) for more.*
 
 ---
-
-### `~ $ git log --oneline -5`
-
-<!-- LATEST_COMMITS:START -->
-- **webhookd** - ci: bump actions/checkout from 4.2.2 to 7.0.1 (#9)
-- **waitfor** - ci: bump the github-actions group with 3 updates (#2)
-- **legendary-octo-happiness** - first commit
-- **redesigned-spork** - - Refactor code structure for improved readability and maintainability
-- **simlife** - 450+ errors, I'll ix them all
-<!-- LATEST_COMMITS:END -->
-
----
-
-<p align="center"><sub>building in public, one bug at a time</sub></p>
+<sub>building in public, one bug at a time</sub>
